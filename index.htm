@@ -16,6 +16,7 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
+            transition: background-color 0.5s ease;
         }
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
@@ -40,7 +41,22 @@
             outline: none;
         }
         .success-bg {
-            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #38bdf8;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .blackout {
+            background-color: black !important;
         }
     </style>
 </head>
@@ -60,7 +76,7 @@
             
             <div id="input-container">
                 <input type="text" id="passwordInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
-                <button onclick="checkPassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
+                <button id="mainBtn" onclick="checkPassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
                     Entrar
                 </button>
             </div>
@@ -73,14 +89,28 @@
         const inputField = document.getElementById('passwordInput');
         const mainContent = document.getElementById('app');
 
-        // Atalho para pressionar Enter
         inputField.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 checkPassword();
             }
         });
 
+        function getRandomChar() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        function handleRandomInput(e) {
+            // Se for tecla de controle (Backspace, Enter, etc), permite o comportamento padrão
+            if (e.key.length > 1) return;
+            
+            e.preventDefault();
+            const input = e.target;
+            input.value += getRandomChar();
+        }
+
         function loginSuccess() {
+            mainContent.classList.add('success-bg');
             mainContent.innerHTML = `
                 <div class="animate-bounce mb-6">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-green-100 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,56 +123,98 @@
                     Jogar Novamente
                 </button>
             `;
-            mainContent.classList.add('success-bg');
+        }
+
+        function startRecovery() {
+            mainContent.innerHTML = `
+                <div class="flex flex-col items-center py-8">
+                    <div class="spinner mb-4"></div>
+                    <p class="text-blue-400 font-medium">Verificando</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                stage = 5; 
+                mainContent.innerHTML = `
+                    <div class="mb-6 flex justify-center">
+                        <div class="p-4 bg-yellow-500/20 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <h2 class="text-xl mb-6 text-white leading-relaxed">
+                        Senha incorreta! <br> Digite sua senha
+                    </h2>
+                    <div id="input-container">
+                        <input type="text" id="finalInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
+                        <button onclick="checkFinalPassword()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
+                            Validar
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('finalInput').addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') checkFinalPassword();
+                });
+            }, 10000);
+        }
+
+        function checkFinalPassword() {
+            const val = document.getElementById('finalInput').value.trim();
+            if (val === "sua senha") {
+                loginSuccess();
+            } else {
+                document.body.classList.add('blackout');
+                mainContent.style.display = 'none';
+            }
         }
 
         function checkPassword() {
             const val = inputField.value.trim();
             
             if (stage === 1) {
-                if (val === "sua senha") {
-                    loginSuccess();
-                } else {
-                    instructionText.textContent = "A senha é incorreta";
-                    inputField.value = "";
-                    stage = 2;
-                }
+                if (val === "sua senha") { loginSuccess(); } 
+                else { instructionText.textContent = "A senha é incorreta"; inputField.value = ""; stage = 2; }
             } 
             else if (stage === 2) {
-                if (val === "incorreta") {
-                    loginSuccess();
-                } else {
-                    instructionText.textContent = "Tente de novo";
-                    inputField.value = "";
-                    stage = 3;
-                }
+                if (val === "incorreta") { loginSuccess(); } 
+                else { instructionText.textContent = "Tente de novo"; inputField.value = ""; stage = 3; }
             } 
             else if (stage === 3) {
-                if (val === "de novo") {
-                    loginSuccess();
-                } else {
-                    instructionText.textContent = "Por favor tente novamente mais tarde";
-                    inputField.value = "";
-                    stage = 4;
-                }
+                if (val === "de novo") { loginSuccess(); } 
+                else { instructionText.textContent = "Por favor tente novamente mais tarde"; inputField.value = ""; stage = 4; }
             } 
             else if (stage === 4) {
-                if (val === "novamente mais tarde") {
-                    loginSuccess();
-                } else {
-                    // O conteúdo desaparece
+                if (val === "novamente mais tarde") { loginSuccess(); } 
+                else {
                     mainContent.style.opacity = "0";
-                    mainContent.style.transform = "scale(0.9)";
                     setTimeout(() => {
                         mainContent.innerHTML = `
                         <div class="flex flex-col items-center">
                             <p class="text-slate-400 italic mb-6">O sistema desistiu de você.</p>
-                            <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-2 px-4 rounded-lg transition-colors">
-                                Tentar novamente
-                            </button>
+                            <div id="recovery-input-space" class="w-full flex flex-col items-center">
+                            </div>
                         </div>`;
                         mainContent.style.opacity = "1";
-                        mainContent.style.transform = "scale(1)";
+
+                        setTimeout(() => {
+                            const space = document.getElementById('recovery-input-space');
+                            space.innerHTML = `
+                                <input type="text" id="triggerInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
+                                <button id="triggerBtn" onclick="startRecovery()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
+                                    Entrar
+                                </button>
+                            `;
+                            
+                            const trigInput = document.getElementById('triggerInput');
+                            // Aplica a lógica de caracteres aleatórios
+                            trigInput.addEventListener('keydown', handleRandomInput);
+                            
+                            trigInput.addEventListener('keypress', function (e) {
+                                if (e.key === 'Enter') startRecovery();
+                            });
+                        }, 5000);
                     }, 500);
                 }
             }
