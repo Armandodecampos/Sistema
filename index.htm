@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Segurança Ultra Avançado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .input-field {
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid #334155;
+            color: white;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            border-color: #38bdf8;
+            outline: none;
+        }
+        .success-bg {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="glass-card">
+        <div id="main-content">
+            <div class="mb-6 flex justify-center">
+                <div class="p-4 bg-blue-500/20 rounded-full">
+                    <svg id="lock-icon" xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+            </div>
+            
+            <h2 id="instruction" class="text-2xl font-bold mb-6 text-white">Digite sua senha</h2>
+            
+            <div id="input-container">
+                <input type="text" id="passwordInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
+                <button onclick="checkPassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
+                    Entrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stage = 1;
+        const instructionText = document.getElementById('instruction');
+        const inputField = document.getElementById('passwordInput');
+        const mainContent = document.getElementById('app');
+
+        // Atalho para pressionar Enter
+        inputField.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        function loginSuccess() {
+            mainContent.innerHTML = `
+                <div class="animate-bounce mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-green-100 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">Acesso Concedido!</h1>
+                <p class="text-green-50 mb-8">Você conseguiu logar no sistema.</p>
+                <button onclick="location.reload()" class="inline-block bg-white/20 hover:bg-white/30 text-white border border-white/40 font-semibold py-2 px-6 rounded-full transition-all duration-200">
+                    Jogar Novamente
+                </button>
+            `;
+            mainContent.classList.add('success-bg');
+        }
+
+        function checkPassword() {
+            const val = inputField.value.trim();
+            
+            if (stage === 1) {
+                if (val === "sua senha") {
+                    loginSuccess();
+                } else {
+                    instructionText.textContent = "A senha é incorreta";
+                    inputField.value = "";
+                    stage = 2;
+                }
+            } 
+            else if (stage === 2) {
+                if (val === "incorreta") {
+                    loginSuccess();
+                } else {
+                    instructionText.textContent = "Tente de novo";
+                    inputField.value = "";
+                    stage = 3;
+                }
+            } 
+            else if (stage === 3) {
+                if (val === "de novo") {
+                    loginSuccess();
+                } else {
+                    instructionText.textContent = "Por favor tente novamente mais tarde";
+                    inputField.value = "";
+                    stage = 4;
+                }
+            } 
+            else if (stage === 4) {
+                if (val === "novamente mais tarde") {
+                    loginSuccess();
+                } else {
+                    // O conteúdo desaparece
+                    mainContent.style.opacity = "0";
+                    mainContent.style.transform = "scale(0.9)";
+                    setTimeout(() => {
+                        mainContent.innerHTML = `
+                        <div class="flex flex-col items-center">
+                            <p class="text-slate-400 italic mb-6">O sistema desistiu de você.</p>
+                            <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-2 px-4 rounded-lg transition-colors">
+                                Tentar novamente
+                            </button>
+                        </div>`;
+                        mainContent.style.opacity = "1";
+                        mainContent.style.transform = "scale(1)";
+                    }, 500);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
