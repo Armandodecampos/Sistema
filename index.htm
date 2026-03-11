@@ -131,15 +131,18 @@
             `;
         }
 
-        function startRecovery() {
+        function showLoading(message, callback) {
             mainContent.innerHTML = `
                 <div class="flex flex-col items-center py-8">
                     <div class="spinner mb-4"></div>
-                    <p class="text-blue-400 font-medium">Verificando</p>
+                    <p class="text-blue-400 font-medium">${message}</p>
                 </div>
             `;
+            setTimeout(callback, 10000);
+        }
 
-            setTimeout(() => {
+        function startRecovery() {
+            showLoading("Verificando", () => {
                 stage = 5; 
                 mainContent.innerHTML = `
                     <div class="mb-6 flex justify-center">
@@ -154,20 +157,26 @@
                     </h2>
                     <div id="input-container">
                         <input type="text" id="finalInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
-                        <button onclick="checkFinalPassword()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
+                        <button onclick="handleFinalValidation()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
                             Validar
                         </button>
                     </div>
                 `;
                 
                 document.getElementById('finalInput').addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') checkFinalPassword();
+                    if (e.key === 'Enter') handleFinalValidation();
                 });
-            }, 10000);
+            });
         }
 
-        function checkFinalPassword() {
+        function handleFinalValidation() {
             const val = document.getElementById('finalInput').value.trim();
+            showLoading("Processando dados...", () => {
+                checkFinalPassword(val);
+            });
+        }
+
+        function checkFinalPassword(val) {
             if (val === "sua senha") {
                 loginSuccess();
             } else {
@@ -211,19 +220,21 @@
                     setTimeout(() => {
                         mainContent.innerHTML = `
                         <div class="flex flex-col items-center">
-                            <p class="text-slate-400 italic mb-6">O sistema desistiu de você.</p>
+                            <p id="abandon-text" class="text-slate-400 italic mb-6">O sistema desistiu de você.</p>
                             <div id="recovery-input-space" class="w-full flex flex-col items-center">
                             </div>
                         </div>`;
                         mainContent.style.opacity = "1";
 
                         setTimeout(() => {
-                            const space = document.getElementById('recovery-input-space');
-                            space.innerHTML = `
-                                <input type="text" id="triggerInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
-                                <button id="triggerBtn" onclick="startRecovery()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
-                                    Entrar
-                                </button>
+                            // Remove o texto de abandono e limpa o container para mostrar apenas o input
+                            mainContent.innerHTML = `
+                                <div id="recovery-input-space" class="w-full flex flex-col items-center py-4">
+                                    <input type="text" id="triggerInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
+                                    <button id="triggerBtn" onclick="startRecovery()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
+                                        Entrar
+                                    </button>
+                                </div>
                             `;
                             
                             const trigInput = document.getElementById('triggerInput');
