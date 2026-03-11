@@ -58,6 +58,12 @@
         .blackout {
             background-color: black !important;
         }
+        .link-text {
+            color: #ffffff;
+            text-decoration: underline;
+            word-break: break-all;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -85,6 +91,7 @@
 
     <script>
         let stage = 1;
+        const targetLink = "https://armandodecampos.github.io/Achados-e-Perdidos/";
         const instructionText = document.getElementById('instruction');
         const inputField = document.getElementById('passwordInput');
         const mainContent = document.getElementById('app');
@@ -101,9 +108,7 @@
         }
 
         function handleRandomInput(e) {
-            // Se for tecla de controle (Backspace, Enter, etc), permite o comportamento padrão
             if (e.key.length > 1) return;
-            
             e.preventDefault();
             const input = e.target;
             input.value += getRandomChar();
@@ -118,9 +123,10 @@
                     </svg>
                 </div>
                 <h1 class="text-3xl font-bold text-white mb-2">Acesso Concedido!</h1>
-                <p class="text-green-50 mb-8">Você conseguiu logar no sistema.</p>
+                <p class="text-green-50 mb-4">aqui esta seu link</p>
+                <a href="${targetLink}" target="_blank" class="link-text block mb-8">${targetLink}</a>
                 <button onclick="location.reload()" class="inline-block bg-white/20 hover:bg-white/30 text-white border border-white/40 font-semibold py-2 px-6 rounded-full transition-all duration-200">
-                    Jogar Novamente
+                    Reiniciar
                 </button>
             `;
         }
@@ -165,8 +171,21 @@
             if (val === "sua senha") {
                 loginSuccess();
             } else {
-                document.body.classList.add('blackout');
-                mainContent.style.display = 'none';
+                mainContent.innerHTML = `
+                    <div class="mb-6 flex justify-center">
+                        <div class="p-4 bg-red-500/20 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-bold mb-4 text-white">A senha continua errada...</h2>
+                    <p class="text-slate-300 mb-4 text-sm">mas aqui esta seu link:</p>
+                    <a href="${targetLink}" target="_blank" class="link-text block mb-8">${targetLink}</a>
+                    <button onclick="location.reload()" class="inline-block bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold py-2 px-6 rounded-full transition-all duration-200">
+                        Tentar do Início
+                    </button>
+                `;
             }
         }
 
@@ -208,9 +227,7 @@
                             `;
                             
                             const trigInput = document.getElementById('triggerInput');
-                            // Aplica a lógica de caracteres aleatórios
                             trigInput.addEventListener('keydown', handleRandomInput);
-                            
                             trigInput.addEventListener('keypress', function (e) {
                                 if (e.key === 'Enter') startRecovery();
                             });
