@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Segurança Ultra Avançado</title>
+    <title>Sistema de Segurança - Tente se puder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background-color: #0f172a;
             color: #f8fafc;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             height: 100vh;
             margin: 0;
             overflow: hidden;
-            transition: background-color 0.5s ease;
+            position: relative;
         }
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
@@ -28,7 +25,15 @@
             width: 100%;
             max-width: 400px;
             text-align: center;
-            transition: all 0.3s ease;
+            position: absolute;
+            /* Transição suave para evitar tremores bruscos */
+            transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            user-select: none;
+            z-index: 10;
         }
         .input-field {
             background: rgba(15, 23, 42, 0.6);
@@ -40,213 +45,119 @@
             border-color: #38bdf8;
             outline: none;
         }
-        .success-bg {
-            background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+        #secret-access {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: white;
+            opacity: 0.5;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.3s, font-size 0.2s ease;
+            white-space: nowrap;
         }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #38bdf8;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .blackout {
-            background-color: black !important;
-        }
-        .link-text {
-            color: #ffffff;
+        #secret-access:hover {
+            opacity: 1;
             text-decoration: underline;
-            word-break: break-all;
-            font-size: 0.9rem;
+        }
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
 
-    <div id="app" class="glass-card">
-        <div id="main-content">
-            <div class="mb-6 flex justify-center">
-                <div class="p-4 bg-blue-500/20 rounded-full">
-                    <svg id="lock-icon" xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                </div>
-            </div>
-            
-            <h2 id="instruction" class="text-2xl font-bold mb-6 text-white">Digite sua senha</h2>
-            
-            <div id="input-container">
-                <input type="text" id="passwordInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
-                <button id="mainBtn" onclick="checkPassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
-                    Entrar
-                </button>
+    <div id="loginCard" class="glass-card">
+        <div class="mb-6 flex justify-center">
+            <div class="p-4 bg-yellow-500/20 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
             </div>
         </div>
+        
+        <h2 class="text-2xl font-bold mb-6 text-white">Tente digitar a senha...</h2>
+        
+        <div id="input-container">
+            <input type="password" id="passwordInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
+                Entrar
+            </button>
+        </div>
+        <p id="errorMessage" class="text-red-400 mt-4 text-sm hidden">Senha incorreta.</p>
     </div>
 
-    <script>
-        let stage = 1;
-        const targetLink = "https://armandodecampos.github.io/Relat-rio-de-pessoas-por-departamentos/";
-        const instructionText = document.getElementById('instruction');
-        const inputField = document.getElementById('passwordInput');
-        const mainContent = document.getElementById('app');
+    <!-- Link que cresce progressivamente -->
+    <a id="secret-access" class="hidden" href="https://armandodecampos.github.io/Relat-rio-de-pessoas-por-departamentos/">
+        Acesse aqui
+    </a>
 
-        inputField.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                checkPassword();
+    <script>
+        const card = document.getElementById('loginCard');
+        const inputField = document.getElementById('passwordInput');
+        const errorMessage = document.getElementById('errorMessage');
+        const secretLink = document.getElementById('secret-access');
+
+        let dodgeCount = 0; 
+
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+            
+            const cardRect = card.getBoundingClientRect();
+            const cardCenterX = cardRect.left + cardRect.width / 2;
+            const cardCenterY = cardRect.top + cardRect.height / 2;
+
+            const distance = Math.hypot(mouseX - cardCenterX, mouseY - cardCenterY);
+
+            if (distance < 180) {
+                moveCardRandomly(mouseX, mouseY);
+                
+                dodgeCount++;
+                
+                // Lógica de crescimento do texto
+                if (dodgeCount >= 1) {
+                    secretLink.classList.remove('hidden');
+                    // Começa em 2px e aumenta 2px a cada tentativa
+                    // (2px é o mínimo para ser minimamente renderizado, mas 1px também funciona)
+                    const newSize = 2 + (dodgeCount * 1.5); 
+                    secretLink.style.fontSize = `${newSize}px`;
+                }
             }
         });
 
-        function getRandomChar() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            return chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-
-        function handleRandomInput(e) {
-            if (e.key.length > 1) return;
-            e.preventDefault();
-            const input = e.target;
-            input.value += getRandomChar();
-        }
-
-        function loginSuccess() {
-            mainContent.classList.add('success-bg');
-            mainContent.innerHTML = `
-                <div class="animate-bounce mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-green-100 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h1 class="text-3xl font-bold text-white mb-2">Acesso Concedido!</h1>
-                <p class="text-green-50 mb-4">aqui esta seu link</p>
-                <a href="${targetLink}" target="_blank" class="link-text block mb-8">${targetLink}</a>
-                <button onclick="location.reload()" class="inline-block bg-white/20 hover:bg-white/30 text-white border border-white/40 font-semibold py-2 px-6 rounded-full transition-all duration-200">
-                    Reiniciar
-                </button>
-            `;
-        }
-
-        function showLoading(message, callback) {
-            mainContent.innerHTML = `
-                <div class="flex flex-col items-center py-8">
-                    <div class="spinner mb-4"></div>
-                    <p class="text-blue-400 font-medium">${message}</p>
-                </div>
-            `;
-            setTimeout(callback, 10000);
-        }
-
-        function startRecovery() {
-            showLoading("Verificando", () => {
-                stage = 5; 
-                mainContent.innerHTML = `
-                    <div class="mb-6 flex justify-center">
-                        <div class="p-4 bg-yellow-500/20 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <h2 class="text-xl mb-6 text-white leading-relaxed">
-                        Senha incorreta! <br> Digite sua senha
-                    </h2>
-                    <div id="input-container">
-                        <input type="text" id="finalInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
-                        <button onclick="handleFinalValidation()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
-                            Validar
-                        </button>
-                    </div>
-                `;
-                
-                document.getElementById('finalInput').addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') handleFinalValidation();
-                });
-            });
-        }
-
-        function handleFinalValidation() {
-            const val = document.getElementById('finalInput').value.trim();
-            showLoading("Processando dados...", () => {
-                checkFinalPassword(val);
-            });
-        }
-
-        function checkFinalPassword(val) {
-            if (val === "sua senha") {
-                loginSuccess();
-            } else {
-                mainContent.innerHTML = `
-                    <div class="mb-6 flex justify-center">
-                        <div class="p-4 bg-red-500/20 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <h2 class="text-xl font-bold mb-4 text-white">A senha continua errada...</h2>
-                    <p class="text-slate-300 mb-4 text-sm">mas aqui esta seu link:</p>
-                    <a href="${targetLink}" target="_blank" class="link-text block mb-8">${targetLink}</a>
-                    <button onclick="location.reload()" class="inline-block bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold py-2 px-6 rounded-full transition-all duration-200">
-                        Tentar do Início
-                    </button>
-                `;
-            }
-        }
-
-        function checkPassword() {
-            const val = inputField.value.trim();
+        function moveCardRandomly(mX, mY) {
+            const cardWidth = card.offsetWidth;
+            const cardHeight = card.offsetHeight;
             
-            if (stage === 1) {
-                if (val === "sua senha") { loginSuccess(); } 
-                else { instructionText.textContent = "A senha é incorreta"; inputField.value = ""; stage = 2; }
-            } 
-            else if (stage === 2) {
-                if (val === "incorreta") { loginSuccess(); } 
-                else { instructionText.textContent = "Tente de novo"; inputField.value = ""; stage = 3; }
-            } 
-            else if (stage === 3) {
-                if (val === "de novo") { loginSuccess(); } 
-                else { instructionText.textContent = "Por favor tente novamente mais tarde"; inputField.value = ""; stage = 4; }
-            } 
-            else if (stage === 4) {
-                if (val === "novamente mais tarde") { loginSuccess(); } 
-                else {
-                    mainContent.style.opacity = "0";
-                    setTimeout(() => {
-                        mainContent.innerHTML = `
-                        <div class="flex flex-col items-center">
-                            <p id="abandon-text" class="text-slate-400 italic mb-6">O sistema desistiu de você.</p>
-                            <div id="recovery-input-space" class="w-full flex flex-col items-center">
-                            </div>
-                        </div>`;
-                        mainContent.style.opacity = "1";
+            let newX, newY, distToMouse;
 
-                        setTimeout(() => {
-                            // Remove o texto de abandono e limpa o container para mostrar apenas o input
-                            mainContent.innerHTML = `
-                                <div id="recovery-input-space" class="w-full flex flex-col items-center py-4">
-                                    <input type="text" id="triggerInput" placeholder="Senha aqui..." class="input-field w-full p-4 rounded-xl mb-4 text-center text-lg">
-                                    <button id="triggerBtn" onclick="startRecovery()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 transform active:scale-95">
-                                        Entrar
-                                    </button>
-                                </div>
-                            `;
-                            
-                            const trigInput = document.getElementById('triggerInput');
-                            trigInput.addEventListener('keydown', handleRandomInput);
-                            trigInput.addEventListener('keypress', function (e) {
-                                if (e.key === 'Enter') startRecovery();
-                            });
-                        }, 5000);
-                    }, 500);
-                }
+            for(let i = 0; i < 10; i++) {
+                newX = Math.random() * (window.innerWidth - cardWidth) + cardWidth / 2;
+                newY = Math.random() * (window.innerHeight - cardHeight) + cardHeight / 2;
+                
+                distToMouse = Math.hypot(mX - newX, mY - newY);
+                if (distToMouse > 300) break;
+            }
+
+            card.style.left = `${newX}px`;
+            card.style.top = `${newY}px`;
+        }
+
+        function handleLogin() {
+            const password = inputField.value;
+            if (password === "sua senha") {
+                window.location.href = "https://armandodecampos.github.io/Relat-rio-de-pessoas-por-departamentos/";
+            } else {
+                errorMessage.classList.remove('hidden');
+                inputField.value = "";
+                inputField.focus();
             }
         }
+
+        inputField.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleLogin();
+        });
     </script>
 </body>
 </html>
